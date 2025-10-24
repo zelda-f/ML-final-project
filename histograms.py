@@ -7,11 +7,15 @@
 # 2. HOO place + initial gaze location --> performance
 # 3. HOO place * (initial gaze location + some other gaze metric) --> performance
 
-# suiloette score to find number of cluster
-# variance
-# HOO look first?
+# Gaze clusters per solving quartile --> suiloette score to find number of cluster
+# variance --> take the variance of (x,y) per participant per problem
+# HOO look first? --> Zelda did for masters thesis
+# HOO count --> Zelda did for masters thesis
+# how long they looked at HOO on average --> add up total look time and divide by number of looks
+# First AOI Look --> which AOI did they look at first
+# Peak HOO look quartile --> Zelda did for masters thesis
+
 # include covariates (problems ID) 
-# how long they looked at HOO on average
 # multiplication vs division 
 # regulatization --> one hot drop one so you dont have multi colineararty
 
