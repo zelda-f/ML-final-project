@@ -58,7 +58,7 @@ gaze_df = gaze_df.groupby(['Participant_anon', 'Problem_id'], group_keys=False).
 
 print(gaze_df['time_quartile'].head())
 
-# Take the variance of gaze points in x and y per participant/problem
+# Take the covariance of gaze points in x and y per participant/problem
 def add_gaze_covariance(gaze_df):
     def summarize_covariance(group):
         cov = group[['x', 'y']].cov().iloc[0, 1]
