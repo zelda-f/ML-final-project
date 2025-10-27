@@ -57,3 +57,26 @@ def assign_quartile(group):
 gaze_df = gaze_df.groupby(['Participant_anon', 'Problem_id'], group_keys=False).apply(assign_quartile)
 
 print(gaze_df['time_quartile'].head())
+
+# Take the variance of gaze points in x and y per participant/problem
+def add_gaze_variance(gaze_df):
+    def summarize_variance(group):
+        x_var = group['x'].var()
+        y_var = group['y'].var()
+        return pd.Series({
+            'gaze_x_variance': x_var,
+            'gaze_y_variance': y_var
+        })
+
+    variance_summary = (
+        gaze_df
+        .groupby(['Participant_anon', 'Problem_id'], group_keys=False)
+        .apply(summarize_variance)
+        .reset_index()
+    )
+
+    gaze_df = gaze_df.merge(variance_summary, on=['Participant_anon', 'Problem_id'], how='left')
+    return gaze_df
+
+gaze_df = add_gaze_variance(gaze_df)
+print(gaze_df[['gaze_x_variance', 'gaze_y_variance']].head())
