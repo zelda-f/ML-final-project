@@ -95,6 +95,32 @@ gaze_df = gaze_df.groupby(['Participant_anon', 'Problem_id'], group_keys=False).
 
 print(gaze_df['time_quartile'].head())
 
+# add peak proportion quartile
+
+def peak_prop_quart(df, AOI_col):
+    # Compute mean hit per quartile within each participant/problem
+    quart_means = (
+        df.groupby(['Participant_anon', 'Problem_id', 'time_quartile'])[AOI_col]
+        .mean()
+        .reset_index()
+    )
+
+    # Find quartile with the max mean per participant/problem
+    peak_quart = (
+        quart_means.loc[
+            quart_means.groupby(['Participant_anon', 'Problem_id'])[AOI_col].idxmax(),
+            ['Participant_anon', 'Problem_id', 'time_quartile']
+        ]
+        .rename(columns={'time_quartile': 'peak_HOO_quartile'})
+    )
+
+    # Merge the peak quartile info back into the main dataframe
+    df = df.merge(peak_quart, on=['Participant_anon', 'Problem_id'], how='left')
+
+    return df
+
+gaze_df = peak_prop_quart(gaze_df, "AOI_HOSide")
+print(gaze_df['peak_HOO_quartile'].mean())
 # Take the covariance of gaze points in x and y per participant/problem
 def add_gaze_covariance(gaze_df):
     def summarize_covariance(group):
