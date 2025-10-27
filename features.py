@@ -30,12 +30,46 @@ def add_gaze_count_latency(all_AOI_hit, aoi_col="AOI_HOSide"):
     all_AOI_hit = all_AOI_hit.merge(summary, on=['Participant_anon', 'Problem_id'], how='left')
     return all_AOI_hit
 
+def add_avg_HOO_time(df, aoi_col="AOI_HOO"):
+    AOI = aoi_col[4:] if len(aoi_col) > 4 else aoi_col 
+    avg_col = f"{AOI}_AvgLookTime"
+
+    def summarize_group(group):
+        
+        group = group.sort_values("timestamp").reset_index(drop=True)
+
+        group["prev"] = group[aoi_col].shift(1, fill_value=False)
+        group["look_change"] = (group[aoi_col] != group["prev"])
+
+        group["look_id"] = (group["look_change"] & group[aoi_col]).cumsum() * group[aoi_col]
+
+        looks = (
+            group[group[aoi_col]]
+            .groupby("look_id")
+            .agg(start=("timestamp", "min"), end=("timestamp", "max"))
+        )
+
+        looks["duration"] = looks["end"] - looks["start"]
+        total_time = looks["duration"].sum()
+        num_looks = len(looks)
+        avg_time = total_time / num_looks if num_looks > 0 else np.nan
+
+        return pd.Series({avg_col: avg_time})
+
+    summary = (
+        df.groupby(["Participant_anon", "Problem_id"], group_keys=False)
+        .apply(summarize_group)
+        .reset_index()
+    )
+
+    df = df.merge(summary, on=["Participant_anon", "Problem_id"], how="left")
+    return df
+
+
 gaze_df = add_gaze_count_latency(gaze_df)
 gaze_df = add_gaze_count_latency(gaze_df, aoi_col="AOI_LOSide")
 print(gaze_df['HOSide_GazeCount'].head())
 print(gaze_df['LOSide_GazeCount'].head())
-
-# Add time quartiles
 
 def assign_quartile(group):
     """
@@ -140,3 +174,11 @@ res_df, best_df = silhouette_score((2, 10), None, 5000, True)
 
 print(best_df)
 print(res_df)
+
+
+
+gaze_df = add_avg_HOO_time(gaze_df)
+print("Average HOO Look Time:")
+print(gaze_df[['Participant_anon', 'Problem_id', 'HOO_AvgLookTime']])
+gaze_df.to_csv("output.csv", index=False)
+
