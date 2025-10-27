@@ -59,24 +59,22 @@ gaze_df = gaze_df.groupby(['Participant_anon', 'Problem_id'], group_keys=False).
 print(gaze_df['time_quartile'].head())
 
 # Take the variance of gaze points in x and y per participant/problem
-def add_gaze_variance(gaze_df):
-    def summarize_variance(group):
-        x_var = group['x'].var()
-        y_var = group['y'].var()
+def add_gaze_covariance(gaze_df):
+    def summarize_covariance(group):
+        cov = group[['x', 'y']].cov().iloc[0, 1]
         return pd.Series({
-            'gaze_x_variance': x_var,
-            'gaze_y_variance': y_var
+            'gaze_covariance': cov
         })
 
-    variance_summary = (
+    covariance_summary = (
         gaze_df
         .groupby(['Participant_anon', 'Problem_id'], group_keys=False)
-        .apply(summarize_variance)
+        .apply(summarize_covariance)
         .reset_index()
     )
 
-    gaze_df = gaze_df.merge(variance_summary, on=['Participant_anon', 'Problem_id'], how='left')
+    gaze_df = gaze_df.merge(covariance_summary, on=['Participant_anon', 'Problem_id'], how='left')
     return gaze_df
 
-gaze_df = add_gaze_variance(gaze_df)
-print(gaze_df[['gaze_x_variance', 'gaze_y_variance']].head())
+gaze_df = add_gaze_covariance(gaze_df)
+print(gaze_df[['gaze_covariance']].head())
