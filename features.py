@@ -95,3 +95,6 @@ print(gaze_df['time_quartile'].head())
 gaze_df = add_avg_HOO_time(gaze_df)
 print("Average HOO Look Time:")
 print(gaze_df[['Participant_anon', 'Problem_id', 'HOO_AvgLookTime']])
+gaze_df.to_csv("output.csv", index=False)
+
+print("Mean: ", mean_gazeTime)
