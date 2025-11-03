@@ -216,7 +216,7 @@ def silhouette_score(cluster_range=range(2, 7), coord_candidates=None, sample_si
     print(best_df)
     return res_df, best_df
 
-# -------- First AOI looked function (appended; no other changes) --------
+# -------- First AOI looked  --------
 def add_first_AOI_look(df, aoi_cols=None, time_col="timestamp"):
     """
     For each (Participant_anon, Problem_id), find which AOI was looked at first overall,
