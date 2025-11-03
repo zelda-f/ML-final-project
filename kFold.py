@@ -1,44 +1,43 @@
-import argparse
-import numpy as np
 import pandas as pd
+import numpy as np
 
-from sklearn.model_selection import KFold
+def split_kfold(data_path, n_splits=5, random_state=42):
 
-def perform_kfold_split(data_path, n_splits=5, random_state=42):
-    """
-    Perform k-fold cross-validation split on the dataset.
-    Parameters:
-    - data_path: str, path to the CSV file containing the dataset.
-    - n_splits: int, number of folds for K-Fold cross-validation.
-    - random_state: int, random seed for reproducibility.
-
-    Returns:
-    - folds: list of tuples, each containing training and validation indices for each fold.
-    """
-
-    # Load the dataset
     df = pd.read_csv(data_path)
+    group_labels = df.groupby(['Participant_anon', 'Problem_id']).ngroup()
 
-    # Initialize KFold
-    kf = KFold(n_splits=n_splits, shuffle=True, random_state=random_state)
+    # Get unique group IDs (each corresponds to one participant-problem "entry")
+    unique_groups = np.unique(group_labels)
 
+    # Randomize the order of these groups
+    rng = np.random.default_rng(random_state)
+    rng.shuffle(unique_groups)
+
+    # Split group IDs into k folds
+    group_folds = np.array_split(unique_groups, n_splits)
+
+    # Build folds as DataFrames
     folds = []
-    for train_index, val_index in kf.split(df):
-        folds.append((train_index, val_index))
+    for fold_group_ids in group_folds:
+        mask = np.isin(group_labels, fold_group_ids)
+        fold_df = df[mask]
+        folds.append(fold_df)
+
+    # Print summary
+    total_entries = len(unique_groups)
+    print(f"Total unique (Participant_anon, Problem_id) entries: {total_entries}\n")
+
+    for i, fold_groups in enumerate(group_folds):
+        print(f"Fold {i+1}: {len(fold_groups)} entries")
+        print(f"  Entries: {fold_groups}\n")
 
     return folds
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("data_path", type=str)
-    parser.add_argument("--n_splits", type=int, default=5)
-    parser.add_argument("--random_state", type=int, default=42)
-    
-    args = parser.parse_args()
-    
-    folds = perform_kfold_split(args.data_path, args.n_splits, args.random_state)
-    
-    for i, (train_idx, val_idx) in enumerate(folds):
-        print(f"Fold {i+1}:")
-        print(f"  Training indices: {train_idx}")
-        print(f"  Validation indices: {val_idx}")
+
+folds = split_kfold("features.csv", n_splits=5)
+
+# Testing more detailed output for each fold
+for i, fold_df in enumerate(folds):
+    print(f"Fold {i+1}: {len(fold_df)} rows")
+    print("  Participants in this fold:", fold_df['Participant_anon'].unique())
+    print("  Problem_ids in this fold:", fold_df['Problem_id'].unique())
