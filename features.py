@@ -9,6 +9,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, roc_auc_score, confusion_matrix
 import joblib
+from scipy.stats import chi2_contingency
 
 gaze_df = pd.read_csv('features.csv')
 
@@ -328,6 +329,10 @@ X_all = X.fillna(X.median())  # same preprocessing used above
 X_all_s = scaler.transform(X_all)
 gaze_df["_logit_pred_proba"] = clf.predict_proba(X_all_s)[:, 1]
 gaze_df["_logit_pred"] = clf.predict(X_all_s)
+
+test_table = pd.crosstab(gaze_df['TaskCorrect'], gaze_df['_logit_pred'])
+chi, p, dof, ef = chi2_contingency(test_table)
+print("pval: ", p)
 
 # 11) persist outputs
 gaze_df.to_csv("output_with_preds.csv", index=False)
