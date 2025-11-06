@@ -221,13 +221,54 @@ def silhouette_score(cluster_range=range(2, 7), coord_candidates=None, sample_si
     print("Best number of clusters per quartile:")
     print(best_df)
     return res_df, best_df
-    
+
+# -------- First AOI looked  --------
+def add_first_AOI_look(df, aoi_cols=None, time_col="timestamp"):
+    """
+    For each (Participant_anon, Problem_id), find which AOI was looked at first overall,
+    and the time it happened. Writes two new columns after merge:
+      - FirstAOI: string without 'AOI_' prefix (e.g., 'HOSide', 'LOSide', 'HOO')
+      - FirstAOI_Time: timestamp of that first AOI hit
+    """
+    default = ["AOI_HOSide", "AOI_LOSide", "AOI_HOO"]
+    if aoi_cols is None:
+        aoi_cols = [c for c in default if c in df.columns]
+    else:
+        aoi_cols = [c for c in aoi_cols if c in df.columns]
+
+    def first_look(group):
+        g = group.sort_values(time_col)
+        if not aoi_cols:
+            return pd.Series({"FirstAOI": np.nan, "FirstAOI_Time": np.nan})
+
+        any_hit = np.zeros(len(g), dtype=bool)
+        for c in aoi_cols:
+            any_hit |= g[c].fillna(False).to_numpy()
+        if not any_hit.any():
+            return pd.Series({"FirstAOI": np.nan, "FirstAOI_Time": np.nan})
+
+        idx = int(any_hit.argmax())
+        row = g.iloc[idx]
+        first_aoi_name = next((c[4:] for c in aoi_cols if bool(row.get(c, False))), np.nan)
+        first_time = row[time_col]
+        return pd.Series({"FirstAOI": first_aoi_name, "FirstAOI_Time": first_time})
+
+    out = (
+        df.groupby(["Participant_anon", "Problem_id"], group_keys=False)
+        .apply(first_look)
+        .reset_index()
+    )
+    return df.merge(out, on=["Participant_anon", "Problem_id"], how="left")
+# ------------------------------------------------------------------------
+
 res_df, best_df = silhouette_score((2, 10), None, 5000, True)
 
 print(best_df)
 print(res_df)
 
-
+# create FirstAOI and FirstAOI_Time per participant/problem
+gaze_df = add_first_AOI_look(gaze_df, aoi_cols=["AOI_HOSide","AOI_LOSide","AOI_HOO"])
+print(gaze_df[['Participant_anon','Problem_id','FirstAOI','FirstAOI_Time']].head())
 
 gaze_df = add_avg_HOO_time(gaze_df)
 print("Average HOO Look Time:")
