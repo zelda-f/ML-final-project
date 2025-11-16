@@ -216,7 +216,6 @@ def silhouette_score(cluster_range=range(2, 7), coord_candidates=None, sample_si
     print(best_df)
     return res_df, best_df
 
-# -------- First AOI looked  --------
 def add_first_AOI_look(df, aoi_cols=None, time_col="timestamp"):
     """
     For each (Participant_anon, Problem_id), find which AOI was looked at first overall,
@@ -253,7 +252,6 @@ def add_first_AOI_look(df, aoi_cols=None, time_col="timestamp"):
         .reset_index()
     )
     return df.merge(out, on=["Participant_anon", "Problem_id"], how="left")
-# ------------------------------------------------------------------------
 
 res_df, best_df = silhouette_score((2, 10), None, 5000, True)
 
@@ -262,9 +260,15 @@ print(res_df)
 
 # create FirstAOI and FirstAOI_Time per participant/problem
 gaze_df = add_first_AOI_look(gaze_df, aoi_cols=["AOI_HOSide","AOI_LOSide","AOI_HOO"])
-print(gaze_df[['Participant_anon','Problem_id','FirstAOI','FirstAOI_Time']].head())
+gaze_df = pd.get_dummies(gaze_df, columns=["FirstAOI", "HOO_pos"], dtype=int)
 
 gaze_df = add_avg_HOO_time(gaze_df)
-print("Average HOO Look Time:")
+feature_cols = ["HOSide_GazeCount","HOSide_FirstLook",
+                "LOSide_GazeCount","LOSide_FirstLook",
+                "peak_HOO_quartile","FirstAOI_Time",
+                "gaze_covariance","HOO_AvgLookTime", 
+                "BACKWARDSSPATIALSPAN.object_count_span.overall", 
+                "FLANKER.rcs.overall", "Problem_id"]
+gaze_df = gaze_df.dropna(subset=feature_cols).copy()
 print(gaze_df[['Participant_anon', 'Problem_id', 'HOO_AvgLookTime']])
 gaze_df.to_csv("output.csv", index=False)

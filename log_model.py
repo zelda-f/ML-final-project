@@ -8,7 +8,6 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, roc_auc_score, confusion_matrix
 from sklearn.model_selection import KFold
-from scipy.stats import chi2_contingency
 
 
 gaze_df = pd.read_csv("output.csv")
@@ -26,20 +25,21 @@ if to_drop_parts:
 
 target_col = 'TaskCorrect'
 # prepare features: numeric columns only, drop identifiers and the target
-drop_like = {"Participant_anon", "Problem_id", "timestamp", "x", "y", 
-             "TaskPreError", "X", "Answer_preerr", "Answer", "Problemlist_n", "age",
-             "BRT.rt_mean.correct", "BRT.rt_mean.correct.dominant", "BRT.rt_mean.correct.nondominant"}
-numeric = gaze_df.select_dtypes(include=[np.number]).columns.tolist()
-features = [c for c in numeric if c not in drop_like and c != target_col]
+features = ["HOSide_GazeCount","HOSide_FirstLook",
+                "LOSide_GazeCount","LOSide_FirstLook",
+                "peak_HOO_quartile","FirstAOI_HOSide","FirstAOI_LOSide","FirstAOI_Time",
+                "gaze_covariance","HOO_AvgLookTime", "HOO_pos_R",
+                "HOO_pos_L", "BACKWARDSSPATIALSPAN.object_count_span.overall", 
+                "FLANKER.rcs.overall"]
 
 
 if not features:
     raise ValueError("No numeric feature columns found to train on.")
 
+gaze_df = gaze_df.dropna(subset=features + [target_col]).copy()
 X = gaze_df[features].copy()
 y = gaze_df[target_col].copy()
 
-X = X.fillna(X.median())
 
 groups_all = gaze_df["Participant_anon"].astype(str) + "_" + gaze_df["Problem_id"].astype(str)
 X_train, X_test, y_train, y_test, groups_train, groups_test = train_test_split(
