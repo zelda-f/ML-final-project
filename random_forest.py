@@ -116,7 +116,7 @@ importance_df = pd.DataFrame({
 print(importance_df)
 
 
-# Bar chart (with error bars)
+# Bar chart 
 plt.figure(figsize=(10, 6))
 plt.barh(
     importance_df["feature"],
@@ -125,11 +125,11 @@ plt.barh(
 )
 plt.xlabel("Mean Importance")
 plt.title("Random Forest Feature Importance (mean ± std across bootstraps)")
-plt.gca().invert_yaxis()  # highest importance on top
+plt.gca().invert_yaxis()  
 plt.tight_layout()
 plt.show()
 
-# Pie chart (using mean importance)
+# Bar chart (using mean importance)
 plt.figure(figsize=(8, 8))
 plt.pie(
     importance_df["mean_importance"],
