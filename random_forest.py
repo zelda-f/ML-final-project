@@ -3,6 +3,8 @@ import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import GroupShuffleSplit
+import matplotlib.pyplot as plt
+
 
 def train_random_forest_bootstrap(
     df,
@@ -112,3 +114,29 @@ importance_df = pd.DataFrame({
 }).sort_values("mean_importance", ascending=False)
 
 print(importance_df)
+
+
+# Bar chart (with error bars)
+plt.figure(figsize=(10, 6))
+plt.barh(
+    importance_df["feature"],
+    importance_df["mean_importance"],
+    xerr=importance_df["std_importance"]
+)
+plt.xlabel("Mean Importance")
+plt.title("Random Forest Feature Importance (mean ± std across bootstraps)")
+plt.gca().invert_yaxis()  # highest importance on top
+plt.tight_layout()
+plt.show()
+
+# Pie chart (using mean importance)
+plt.figure(figsize=(8, 8))
+plt.pie(
+    importance_df["mean_importance"],
+    labels=importance_df["feature"],
+    autopct="%1.1f%%",
+    startangle=140
+)
+plt.title("Random Forest Feature Importance Distribution")
+plt.tight_layout()
+plt.show()
