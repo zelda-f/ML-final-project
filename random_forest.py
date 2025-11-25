@@ -129,7 +129,7 @@ plt.gca().invert_yaxis()
 plt.tight_layout()
 plt.show()
 
-# Bar chart (using mean importance)
+# Bar chart 
 plt.figure(figsize=(8, 8))
 plt.pie(
     importance_df["mean_importance"],
