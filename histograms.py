@@ -1,44 +1,4 @@
-# Where are solvers looking at a given time stamp?
-# or Where are solvers looking when have solved x% of the problem (in time)?
-# Success rate depending on initial gaze?
-# Response time correlated to correct rate?
-# look at left to right tendency and how HOO placement effects performance through gaze?
-# 1. HOO placement --> performance
-# 2. HOO place + initial gaze location --> performance
-# 3. HOO place * (initial gaze location + some other gaze metric) --> performance
-
-# Gaze clusters per solving quartile --> suiloette score to find number of cluster
-# variance --> take the variance of (x,y) per participant per problem
-# HOO look first? --> Zelda did for masters thesis
-# HOO count --> Zelda did for masters thesis
-# how long they looked at HOO on average --> add up total look time and divide by number of looks
-# First AOI Look --> which AOI did they look at first
-# Peak HOO look quartile --> Zelda did for masters thesis
-
-# include covariates (problems ID) 
-# multiplication vs division 
-# regulatization --> one hot drop one so you dont have multi colineararty
-
-# run a correlation matrix to avoid two correlated features
-
-
-# 2. causal inference (LOOP)
-# 1. feature engineering
-# 3. run model 
-
-# Random forest model (fancy)
-# boot strap -- (resample with replacement)
-# train random forest with all features and missing a feature 
-# two distribution and then we can say that the feature is significant 
-
-# google: how can we check for feature significance in a non linear model?
-
-
-
-
-
-# filter out color and spacing conditions
-# left with NC and NS
+# another data cleaning step
 
 import pandas as pd
 import numpy as np
@@ -50,23 +10,6 @@ df_perf = pd.read_csv('behavioral_all_anon.csv')
 
 print(df_perf['TaskCorrect'].mean())
 
-# df_gaze['timestamp'].hist(bins=60, alpha=0.7)
-# plt.title("Histogram of 'Timestamps'")
-# plt.xlabel("Time")
-# plt.ylabel("Frequency")
-# plt.show()
-
-# df_gaze['x'].hist(bins=60, color='orange', alpha=0.7)
-# plt.title("Histogram of 'x locations'")
-# plt.xlabel("x location")
-# plt.ylabel("Frequency")
-# plt.show()
-
-# df_gaze['y'].hist(bins=60, color='purple', alpha=0.7)
-# plt.title("Histogram of 'y locations'")
-# plt.xlabel("y location")
-# plt.ylabel("Frequency")
-# plt.show()
 
 joint_df = pd.merge(df_gaze, df_perf, on = ['Problem_id', 'Participant_anon'], how='left')
 
